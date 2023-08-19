@@ -1,0 +1,52 @@
+*{
+    margin: 0;
+    padding: 0;
+    /* color: white; */
+}
+
+.app {
+    text-align: center;
+    display: flex;
+    min-height: 100vh;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.form-container, .login-form, .reg-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-container {
+    padding: 5rem;
+    border: 1px solid #6A04C4;
+    border-radius: 10px;
+    background-image: linear-gradient(to right top, #4568DC, #B06AB3);
+}
+
+label {
+    text-align: left;
+    padding: 0.3rem 0;
+}
+
+input {
+    margin: 0.5rem 0;
+    padding: 1rem;
+    border: none;
+    border-radius: 10px;
+}
+
+button {
+    border: none;
+    padding: 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: white;
+    background: #6A04C4;
+}
+
+.link-btn {
+    background: none;
+    text-decoration: underline;
+}
