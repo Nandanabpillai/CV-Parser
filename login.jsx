@@ -3,67 +3,51 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth"
 import { auth } from "./firebase"
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useUserAuth } from "./UserAuthContext";
 
 export default function Login(props) {
     const [email, setEmail] = useState('')
     const [pass, setPass] = useState('')
-    const [user, loading, error] = useAuthState(auth);
-    
-    const handleSubmit = (e) => {
-        // const auth = getAuth()
-        // e.preventDefault();
-        // console.log(auth)
-        // signInWithEmailAndPassword(auth, email, password)
-        // .then((userCredential) => {
-        //     // Signed in
-        //     const user = userCredential.user;
-        //     console.log(user);
-        // })
-        // .catch((error) => {
-        //     const errorCode = error.code;
-        //     const errorMessage = error.message;
-        //     console.log(errorCode, errorMessage)
-        // });
+    const auth = getAuth()
+    const [err, setErr] = useState("")
+    const navigate = useNavigate()
+    const { logIn } = useUserAuth
 
-        // const auth = getAuth();
-        // signInWithEmailAndPassword(auth, email, password)
-        // .then((userCredential) => {
-        //     // Signed in 
-        //     const user = userCredential.user;
-        //     // ...
-        // })
-        // .catch((error) => {
-        //     const errorCode = error.code;
-        //     const errorMessage = error.message;
-        // });
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        // setErr("")
+        // try {
+        //     await logIn(email, pass)
+        //     console.log(email)
+        //     navigate("/home")
+        // } catch(err) {
+        //     setErr(err.message)
+        // }
+        signInWithEmailAndPassword(auth, email, pass)
+        .then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            console.log(user);
+            navigate('/home')
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode, errorMessage)
+        })
+    };
 
-        const logInWithEmailAndPassword = async (email, password) => {
-            try {
-              await signInWithEmailAndPassword(auth, email, password);
-            } catch (err) {
-              console.error(err);
-              alert(err.message);
-            }
-          };
-    }
-    
-  useEffect(() => {
-    if (loading) {
-      // maybe trigger a loading screen
-      return;
-    }
-  }, [user, loading]);
     return (
         <div className="form-container">
             <h2> Login </h2>
-            <form className = 'login-form'>
+            <form className = 'login-form' onSubmit={handleSubmit}>
                 <label htmlFor = 'email'>email</label>
                 <input value = {email} onChange={(e) => setEmail(e.target.value)} type="email" id="email" name="email"></input>
                 <label htmlFor = 'password'>password</label>
                 <input value = {pass} onChange={(e) => setPass(e.target.value)}type="password" id="password" name="password"></input>
-                <button onClick={handleSubmit}>Login</button>
+                <button type="submit">Login</button>
             </form>
-            <button className = "link-btn" onClick={() => props.onFormSwitch('register')}> Don't have an account? Register here</button>
+            <button className = "link-btn"> Don't have an account? <Link to = "/signup">Register here</Link></button>
         </div>
     )
 }

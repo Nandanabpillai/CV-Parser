@@ -1,26 +1,37 @@
 import { useState } from "react"
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { Link, useNavigate } from 'react-router-dom'
+import { useUserAuth } from "./UserAuthContext";
 
 export default function Register(props) {
     const [email, setEmail] = useState('')
     const [pass, setPass] = useState('')
     const [name, setName] = useState('')
+    const [err, setErr] = useState('')
+    const { signUp } = useUserAuth()
+    const navigate = useNavigate()
     const auth = getAuth();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(auth)
-        createUserWithEmailAndPassword(auth, email, pass)
-        .then((userCredential) => {
-            // Signed in
-            const user = userCredential.user;
-        })
-        .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            alert(errorCode, errorMessage);
-            // ..
-        });
+        setErr("")
+        try {
+            await signUp(email, pass)
+            navigate("/")
+        } catch(err) {
+            setErr(err.message)
+        }
+        // createUserWithEmailAndPassword(auth, email, pass)
+        // .then((userCredential) => {
+        //     // Signed in
+        //     const user = userCredential.user;
+        // })
+        // .catch((error) => {
+        //     const errorCode = error.code;
+        //     const errorMessage = error.message;
+        //     alert(errorCode, errorMessage);
+        //     // ..
+        // });
     }
 
     return (
@@ -35,7 +46,7 @@ export default function Register(props) {
                 <input value = {pass} onChange={(e) => setPass(e.target.value)} type="password" id="password" name="password"></input>
                 <button type="submit"> Register </button>
             </form>
-            <button className = "link-btn" onClick={() => props.onFormSwitch('login')}> Already have an account? Login here</button>
+            <button className = "link-btn"> Already have an account? <Link to = "/">Login here</Link></button>
         </div>
     )
 }
