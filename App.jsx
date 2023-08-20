@@ -1,15 +1,9 @@
-import react, {useState} from 'react'
-import Register from './register'
-import Login from './login'
-import Home from './home'
-import app from './firebase'
-import AuthDetails from './authDetails'
-import Upload from './upload'
-import './App.css'
+import Index from './index';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import LoginPage from './login'
 import ProtectedRoute from './ProtectedRoute'
 import { UserAuthContextProvider } from './UserAuthContext'
-
+import Upload from './upload'
 
 function App() {
     return (
@@ -26,8 +20,8 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-          <Route path = '/' element = {<Login />} />
-          <Route path = '/signup' element = {<Register />} />
+          <Route path = '/' element = {<LoginPage />} />
+          <Route path = '/signup' element = {<Index />} />
         </Routes>
         </UserAuthContextProvider>
       </div>
