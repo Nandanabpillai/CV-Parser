@@ -22,17 +22,6 @@ export default function Register(props) {
         } catch(err) {
             setErr(err.message)
         }
-        // createUserWithEmailAndPassword(auth, email, pass)
-        // .then((userCredential) => {
-        //     // Signed in
-        //     const user = userCredential.user;
-        // })
-        // .catch((error) => {
-        //     const errorCode = error.code;
-        //     const errorMessage = error.message;
-        //     alert(errorCode, errorMessage);
-        //     // ..
-        // });
     }
 
     return (
@@ -109,8 +98,5 @@ export default function Register(props) {
             </div>
         </div>
     </div>
-                
-                
-            // <button className = "link-btn"> Already have an account? <Link to = "/">Login here</Link></button>
     )
 }
