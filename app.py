@@ -1,9 +1,14 @@
-from flask import Flask, request, jsonify
-from werkzeug.utils import secure_filename
-import os
-from flask_cors import CORS  # Import CORS
-from tempfile import NamedTemporaryFile
-import pypdfium2 as pdfium
+import streamlit as st
+import os 
+import nltk
+import json
+import base64
+import pandas as pd
+import ast
+
+os.environ["OPENAI_API_KEY"] = "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"
+
+from langchain.document_loaders import PyPDFLoader
 from langchain.vectorstores import Chroma
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.document_loaders import UnstructuredPDFLoader
@@ -11,54 +16,37 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chains.question_answering import load_qa_chain   
 from PIL import Image
 from datetime import datetime
-import json
-import base64
-import pandas as pd
-import ast
-import nltk
+from tempfile import NamedTemporaryFile
+import pypdfium2 as pdfium
 
-os.environ["OPENAI_API_KEY"] = "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"
-app = Flask(__name__)
-CORS(app)  # Add this line to enable CORS for your app
+st.subheader("Upload CV in PDF or image format")
+uploaded_file = st.file_uploader("Upload PDF or Images", type=["pdf","png","jpg","jpeg"])
 
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 
-UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@app.route('/upload/', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
-    
-    file = request.files['file']
-
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-
-        # Ensure the 'uploads' directory exists
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+if uploaded_file:
+    file_name, file_extension = os.path.splitext(uploaded_file.name)
+    if file_extension != '.pdf':
+        uploaded_image = Image.open(uploaded_file)
+        st.image(uploaded_image,width=700)
+        img = uploaded_image.convert('RGB')
+        loader = UnstructuredPDFLoader(img)
+        img.save(file_name+'.pdf')
+        PDFFileName = file_name+'.pdf'
+    else:
         with NamedTemporaryFile(delete=False, dir='.', suffix='.pdf') as f:
-            f.write(file.getbuffer())
-            PDFFileName = file.filename
+            f.write(uploaded_file.getbuffer())
+            PDFFileName = f.name
             pdf = pdfium.PdfDocument(PDFFileName)
             n_pages = len(pdf)
             for page_number in range(n_pages):
                 page = pdf.get_page(page_number)
                 pil_image = page.render(scale=4).to_pil()
-        loader = UnstructuredPDFLoader(PDFFileName)
+                st.image(pil_image,width=700)
+            
+    st.write("Document parsing in progress ...")
+    loader = UnstructuredPDFLoader(PDFFileName)
     pages = loader.load_and_split()
     embeddings = OpenAIEmbeddings()
     docsearch = Chroma.from_documents(pages, embeddings).as_retriever()    
@@ -68,7 +56,9 @@ def upload_file():
     docs = docsearch.get_relevant_documents(query)
     chain = load_qa_chain(ChatOpenAI(temperature=0), chain_type="stuff")
     output = chain.run(input_documents=docs, question=query)
+    st.subheader("Parsing result in JSON format")
     valid_json = ast.literal_eval(output)
+    st.json(valid_json)
     
     json_data = json.loads(json.dumps(valid_json))
 
@@ -91,8 +81,8 @@ def upload_file():
         "work": works,
         "skill": skills
     })    
+    st.subheader("Parsing result as a table")
+    st.table(df)
     csv = df.to_csv(index=False).encode('utf-8')
-    
-
-if __name__ == '__main__':
-    app.run(host='localhost', port=8000)
+    download1 = st.download_button(label="Download result as CSV",data=csv,file_name='result_df.csv',mime='text/csv')
+    st.write("Done...")
