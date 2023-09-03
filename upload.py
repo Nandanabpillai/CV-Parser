@@ -17,7 +17,7 @@ import pandas as pd
 import ast
 import nltk
 
-os.environ["OPENAI_API_KEY"] = "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"
+os.environ["OPENAI_API_KEY"] = "sk-***************************"
 app = Flask(__name__)
 CORS(app)  # Add this line to enable CORS for your app
 
@@ -52,7 +52,7 @@ def upload_file():
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         with NamedTemporaryFile(delete=False, dir='.', suffix='.pdf') as f:
             f.write(file.getbuffer())
-            PDFFileName = file.filename
+            PDFFileName = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             pdf = pdfium.PdfDocument(PDFFileName)
             n_pages = len(pdf)
             for page_number in range(n_pages):
